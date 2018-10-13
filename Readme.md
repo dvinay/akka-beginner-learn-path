@@ -7,9 +7,12 @@
 ### What is Akka ###
 - Akka is a tool kit and a open-source library written in Scala to create concurrent, distributed and fault-tolerant applications
 - By using akka tool kit you can create application which are responsive, concurrent, distributed, event driven and fault-tolerant applications
+- Akka can integrate to any JVM based language
 
 ### How does Akka works ###
-- It implements Actor Based Model. 
+- It implements Actor Based Model.
+- Actor is an entity which communicates to other actor by message passing
+- Actor has it's own state and behavior, like an object in OOP. 
 - The Actor Model provides a higher level of abstraction for writing concurrent and distributed applications. 
 - It helps to developer to deals with explicit locking and thread management. Akka makes it easier to write correct concurrent and parallel application.
 
@@ -33,6 +36,17 @@ class MyActor extends Actor {
     override def receive: Receive = ???
 }
 ```
+- implement **receive** method in the Actor class, if actor receives String message print **Welcome to Actor example**, else print **Unknown message**
+- This method is called each time a message is received by the actor
+- The receive method does pattern matching on the received message and decide what to do.
+```
+class MyActor extends Actor {
+    override def receive: Receive = {
+        case msg : String => println(s"Welcome to Actor example ${msg}")
+        case _ => println(s"Unknown message")
+    }
+}
+```
 - create an actor system - actor system is like a container for actors, it use factory pattern to create an actor
 ``` 
     val actorSystem = ActorSystem("ActorSystem"); 
@@ -54,6 +68,10 @@ class MyActor extends Actor {
     actor ! 12.34
 ```
 - once actor did it work we can close the complete actor system using terminate method
+Note: if you don't terminate the actor system. it will be keep live
 ```
     actorSystem.terminate()
 ```
+- In the above example, we have created an actor **MyActor** by extending Actor trait and overriding receive method.
+- You must provide match cases for all received messages. In case, if there is unknown message, you need to provide a default case as we did in above example.
+[For reference](https://github.com/dvinay/akka-beginner-learn-path/tree/master/akka-training-demo)
