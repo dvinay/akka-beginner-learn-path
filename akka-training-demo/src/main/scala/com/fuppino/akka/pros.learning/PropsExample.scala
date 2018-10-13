@@ -6,7 +6,7 @@ object PropsExample {
   def main(args: Array[String]): Unit = {
     var system = ActorSystem("ActorSystem")
     var actor = system.actorOf(Props[MyPropsActor], "MyPropsActor")
-    actor ! "Hello Akka"
+    actor !  "Hello Akka"
     system.terminate()
   }
 }

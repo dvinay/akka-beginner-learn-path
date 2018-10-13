@@ -118,3 +118,9 @@ Note: if you don't terminate the actor system. it will be keep live
 - The actorOf() method returns an instance of ActorRef, it's a ref object for the actor. 
 - This instance is immutable and has one to one relationship with the actor it represents. 
 - ActorRef is also serializable so that you can serialize it.
+[ref](https://github.com/dvinay/akka-beginner-learn-path/commit/ccc462be18bae362b725ddd075e8b7fa6cc0a0bb)
+
+### AKKA Child Actors creation ###
+- Akka provides facility to create child actor. 
+- You can create child actor by using implicit context reference. ActorSystem is used to create root-level or top-level actor.
+- Akka provides you context so that you can create child actor also.
