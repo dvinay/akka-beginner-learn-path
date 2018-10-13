@@ -143,3 +143,20 @@ Note: if you don't terminate the actor system. it will be keep live
         - This method is invoked right after restarting of newly created Actor.
         - It is used to allow reinitialization after an Actor crash due to exception.
   
+### AKKA Actor Communication ###
+- tell (!)
+    - It is used to send a message asynchronously, It does not wait and block thread for a message. 
+    - If this method is invoked from within an Actor, the sending actor reference will be implicitly passed along with the message.
+    - If this method is invoked from an instance that is not an Actor, the sender will be deadLetters actor reference by default.  
+- ask (?)
+    - ask is a pattern and involves Actors as well as Futures. 
+    - Ask is used to sends a message asynchronously and it returns a Future which represents a possible reply. 
+    - If the actor does not reply and complete the future, it will expire after the timeout period. 
+    - After timeout period, it throws an TimeoutException.
+- Reply and Forward
+    - these operation can be done using ask and tell approach
+
+### How to stop AKKA Actor and ActorSystem ###
+- we can stop akka parent actor using actorSystem.stop(actor) method by passing Root ActorRef object
+- we can stop akka child actor using context.stop(childActor) method by passing child ActorRef object
+- we can stop akka actor system using actorSystem.terminate() method, it will terminate all actors    
