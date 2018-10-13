@@ -1,4 +1,4 @@
-package com.fuppino.akka.learning
+package com.fuppino.akka.sample.leanring
 
 import akka.actor.Actor;          // Importing actor trait
 import akka.actor.ActorSystem;
