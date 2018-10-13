@@ -124,3 +124,22 @@ Note: if you don't terminate the actor system. it will be keep live
 - Akka provides facility to create child actor. 
 - You can create child actor by using implicit context reference. ActorSystem is used to create root-level or top-level actor.
 - Akka provides you context so that you can create child actor also.
+[ref](https://github.com/dvinay/akka-beginner-learn-path/commit/7be056047875683cf140c65797a92adc888c34bd)
+
+### AKKA Actor life cycle ###
+- Akka provides life cycle methods for Actor. we can override and provide specific implementation accordingly.
+    - preStart()
+        - It is invoked right after the starting of Actor and when an Actor is first created. In case of restart, it is called by postRestart() method.
+    - postStop()
+        - After stopping an actor, postStop() method is called. 
+        - It is an asynchronous method. This method is used to release resources after stopping the Actor. 
+        - It may be used for deregistering this Actor. 
+        - Messages sent to a stopped actor will be redirected to the deadLetters of the ActorSystem.
+    - preRestart(reason: Throwable, message: Option[Any])
+        - Actor may be restarted in case an exception is thrown. 
+        - When an actor is restarted, preRestart() method is invoked. 
+        - The preRestart() method is called with the exception that caused the restart. By default it disposes of all children Actors and then calls postStop() method.
+    - postRestart(reason: Throwable)
+        - This method is invoked right after restarting of newly created Actor.
+        - It is used to allow reinitialization after an Actor crash due to exception.
+  
