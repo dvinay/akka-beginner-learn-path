@@ -179,3 +179,17 @@ Note: if you don't terminate the actor system. it will be keep live
 - Akka uses the URL convention to locate the actors. The default values are akka://hostname/ or akka://hostname:2552/ depending upon whether the application uses remote actors or not, to identify the application.
 
 ![AKKA system](https://github.com/dvinay/akka-beginner-learn-path/blob/master/resources/akka-actor%20system.png)
+
+### Actor modules ###
+- akka-actor => Standard actors, untyped actors
+- akka-remote => Remote actors
+- akka-slf4j => Simple Logging Facade for Java (SLF4J) event-handler listener for logging with SLF4J
+- akka-testkit => Testing toolkit for actors
+- akka-kernel => Microkernel for running a bare-bones mini application server
+- akka-<storage-system>-mailbox => File-based Akka durable mailboxes
+- akka-transactor => software transactional memory (STM) support
+- akka-agent => STM agent support
+- akka-dataflow => Oz-style dataflow concurrency support
+- akka-camel => Apache Camel support
+- akka-osgi => OSGI deployment support
+- Akka-zeromq => ZeroMQ support
