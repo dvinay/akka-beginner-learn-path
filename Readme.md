@@ -175,6 +175,7 @@ Note: if you don't terminate the actor system. it will be keep live
 - Actor is modeled as the object that encapsulates state and behavior. All the messages intended for the actors are parked in a queue and actors process the messages from that queue.
 - Akka provides multiple mailbox implementations. The mailboxes can be bounded or unbounded. 
 - A bounded mailbox limits the number of messages that can be queued in the mailbox, meaning it has a defined or fixed capacity for holding the messages.
-- akka actor location is transparent
+- akka actor location is transparent using ActorRef class
 - Akka uses the URL convention to locate the actors. The default values are akka://hostname/ or akka://hostname:2552/ depending upon whether the application uses remote actors or not, to identify the application.
- 
+
+![AKKA system](https://github.com/dvinay/akka-beginner-learn-path/blob/master/resources/akka-actor%20system.png)
