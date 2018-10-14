@@ -247,3 +247,42 @@ Note: if you don't terminate the actor system. it will be keep live
 
 ### ActorSystem & Actor HotSwap ###
 - HotSwap an actor's message loop functionality at runtime.
+[ref](https://github.com/dvinay/akka-beginner-learn-path/commit/ffd9a82b1683b31058900c4a2d452d2c0fe640d5#diff-68f8e00b1e6e805bad13dd74712f1d82)
+```
+case class PING()
+case class PONG()
+ class PingPongActor extends Actor {
+  import context._
+  var count = 0
+  def receive: Receive = {
+    case PING =>
+      println("PING")
+      count = count + 1
+      Thread.sleep(100)
+      self ! PONG
+      become {
+        case PONG =>
+          println("PONG")
+          count = count + 1
+          Thread.sleep(100)
+          self ! PING
+          unbecome()
+      }
+      if(count > 10) context.stop(self)
+  }
+}
+```
+
+### Actors Type ###
+- Untype Actor
+    - Untyped actors respond to messages sent
+- Type Actor
+    - typed actors respond to method calls
+    - A typed actor has two parts—a publicly defined interface, and secondly, an implementation of the interface.
+    - Calls to the publicly defined interface are delegated asynchronously to the private instance of the implementation
+    - The public interface of typed actor provides the service contract that bridges the Actor Model to the object-oriented paradigm
+- Active Object Pattern
+    - The Active Object Design pattern decouples method execution from method invocation, which reside in their own threads of control. 
+    - The goal is to introduce concurrency and fault tolerance, by using asynchronous method invocation and a scheduler for handling requests.
+    - The Active Object pattern uses the proxy pattern (interface) to separate the interface and implementation of the object.
+![AKKA Typed Actor](https://github.com/dvinay/akka-beginner-learn-path/blob/master/resources/akka-actor%20system.png)
