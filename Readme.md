@@ -285,4 +285,4 @@ case class PONG()
     - The Active Object Design pattern decouples method execution from method invocation, which reside in their own threads of control. 
     - The goal is to introduce concurrency and fault tolerance, by using asynchronous method invocation and a scheduler for handling requests.
     - The Active Object pattern uses the proxy pattern (interface) to separate the interface and implementation of the object.
-![AKKA Typed Actor](https://github.com/dvinay/akka-beginner-learn-path/blob/master/resources/akka-actor%20system.png)
+![AKKA Typed Actor](https://github.com/dvinay/akka-beginner-learn-path/blob/master/resources/typed%20actor%20flow.png)
