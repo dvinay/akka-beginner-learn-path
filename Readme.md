@@ -33,6 +33,7 @@ libraryDependencies ++= Seq(
     }
 ```
 - create a actor by extending akka actor class, you have to override **receive** method from Actor trait like an abstract method in java
+- receive method is a partial function in scala 
 ```
 class MyActor extends Actor {
     override def receive: Receive = ???
@@ -152,11 +153,18 @@ Note: if you don't terminate the actor system. it will be keep live
     - If this method is invoked from an instance that is not an Actor, the sender will be deadLetters actor reference by default.  
 - ask (?)
     - ask is a pattern and involves Actors as well as Futures. 
+    - future is a data structure used to retrieve the result of some concurrent operation.
     - Ask is used to sends a message asynchronously and it returns a Future which represents a possible reply. 
     - If the actor does not reply and complete the future, it will expire after the timeout period. 
     - After timeout period, it throws an TimeoutException.
-- Reply and Forward
-    - these operation can be done using ask and tell approach
+- Reply
+    - sender ! message
+    - sender information can get by using context
+    - if message has received from non-actor class or object, reply will send to DeadLetterOffice   
+- Forward
+    - actor.forward(message)
+    - the incoming messages will get forwarded to the target actors. 
+    - it is very important that the original sender reference is maintained and passed on to the target actors.
 
 ### How to stop AKKA Actor and ActorSystem ###
 - we can stop akka parent actor using actorSystem.stop(actor) method by passing Root ActorRef object
@@ -193,3 +201,49 @@ Note: if you don't terminate the actor system. it will be keep live
 - akka-camel => Apache Camel support
 - akka-osgi => OSGI deployment support
 - Akka-zeromq => ZeroMQ support
+
+##### Sample Map reduce application #####
+[ref] (https://github.com/dvinay/akka-beginner-learn-path/commit/cff22721bceb857b2b891543807620a5056a3f8d)
+
+### Actor life cycle ###
+- An actor's lifecycle broadly consists of three phases
+    - Actor is initialized and started
+    - Actor receives and processes messages by executing a specific behavior
+    - Actor stops itself when it receives a termination message
+
+### ActorSystem & Actor stop/Shutdown steps ###
+- Actor stop takes the following steps, when actor receive a stop signal
+    - Actor stops processing the mailbox messages.
+    - Actor sends the STOP signal to all the children.
+    - Actor waits for termination message from all its children.
+    - Actor starts the self-termination process that involves the following:
+        - Invoking the postStop() method
+        - Dumping the attached mailbox
+        - Publishing the terminated message on DeathWatch
+        - Informing the supervisor about self-termination
+- When the actor system calls the shutdown() method, this technique shuts down all the actors and the actor system.
+- By sending a PoisonPill message to an actor—PoisonPill is like any message that goes and sits in the mailbox of the actor. A PoisonPill message is processed by initiating the shutdown of the actor.
+- By calling context.stop(self) for stopping itself and calling context.stop(child) to stop the child actors.
+
+- PoisonPill is a asynchronous way to shutdown the actor
+- kill is a synchronous way. 
+    - The killed actor sends ActorKilledException to its parent. 
+
+```
+    //first option of shutting down the actors by shutting down the ActorSystem
+    system.shutdown()
+    
+    //second option of shutting down the actor by sending a poisonPill message
+    actor ! PoisonPill
+    
+    //third option of shutting down the actor
+    context.stop(self)
+    //or
+    context.stop(childActorRef)
+    
+    // Kill the actor, synchronous way
+    actor ! Kill
+```
+
+### ActorSystem & Actor HotSwap ###
+- HotSwap an actor's message loop functionality at runtime.
