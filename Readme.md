@@ -1,4 +1,6 @@
-## AKKA ToolKit - Learning ##
+# AKKA ToolKit - Learning #
+
+## AKKA Beginners Learning ##
 
 ### prerequisite ###
 - Basic knowledge on Scala
@@ -159,4 +161,20 @@ Note: if you don't terminate the actor system. it will be keep live
 ### How to stop AKKA Actor and ActorSystem ###
 - we can stop akka parent actor using actorSystem.stop(actor) method by passing Root ActorRef object
 - we can stop akka child actor using context.stop(childActor) method by passing child ActorRef object
-- we can stop akka actor system using actorSystem.terminate() method, it will terminate all actors    
+- we can stop akka actor system using actorSystem.terminate() method, it will terminate all actors
+
+## AKKA - Intermediate Learning ##
+
+- Akka was originally created by Jonas Bonér and is currently available as part of the open source Typesafe Stack
+- In the Actor Model, all objects are modeled as independent, computational entities that only respond to the messages received
+- Actors change their state only when they receive a stimulus in the form of a message. So unlike the object-oriented world where the objects are executed sequentially, the actors execute concurrently.
+- Akka actor system provides - Concurrency, Scalability, Fault tolerance, Event-driven architecture, Transaction support, Location transparency.
+
+### Actor System & Actor ###
+- The actor system is the container that manages the actor behavior, lifecycle, hierarchy, and configuration among other things. The actor system provides the structure to manage the application.
+- Actor is modeled as the object that encapsulates state and behavior. All the messages intended for the actors are parked in a queue and actors process the messages from that queue.
+- Akka provides multiple mailbox implementations. The mailboxes can be bounded or unbounded. 
+- A bounded mailbox limits the number of messages that can be queued in the mailbox, meaning it has a defined or fixed capacity for holding the messages.
+- akka actor location is transparent
+- Akka uses the URL convention to locate the actors. The default values are akka://hostname/ or akka://hostname:2552/ depending upon whether the application uses remote actors or not, to identify the application.
+ 
