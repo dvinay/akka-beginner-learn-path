@@ -286,3 +286,124 @@ case class PONG()
     - The goal is to introduce concurrency and fault tolerance, by using asynchronous method invocation and a scheduler for handling requests.
     - The Active Object pattern uses the proxy pattern (interface) to separate the interface and implementation of the object.
 ![AKKA Typed Actor](https://github.com/dvinay/akka-beginner-learn-path/blob/master/resources/typed%20actor%20flow.png)
+
+#### How to create a typed Actor ####
+- create a trait
+```
+trait CalculatorInt {
+    def add(first: Int, second: Int): Future[Int]
+    def subtract(first: Int, second: Int): Future[Int]
+    def incrementCount(): Unit
+    def incrementAndReturn(): Option[Int]
+}
+```
+- create implementation for trait
+```
+class Calculator extends CalculatorInt { // This become an actor
+  var counter: Int = 0
+  import akka.actor.TypedActor.dispatcher
+
+  def add(first: Int, second: Int): Future[Int] =
+    Future successful first + second
+
+  def subtract(first: Int, second: Int): Future[Int] =
+    Future successful first - second
+
+  def incrementCount(): Unit = counter += 1
+
+  def incrementAndReturn(): Option[Int] = {
+    counter += 1
+    Some(counter)
+  }
+}
+```
+- Creating an actor and invoking using Actor Object pattern
+```
+    val _system = ActorSystem("TypedActorsExample")
+    val calculator1: CalculatorInt = TypedActor(_system).typedActorOf(TypedProps[Calculator]())
+```
+- Invoke any method in the Typed Actor
+```
+    calculator1.incrementCount() // function invoke
+
+    // like ask - expecting asynch response
+    val future = calculator1.add(14,6);
+    val result = Await.result(future, 5 second);
+
+    //Method invocation in a blocking way
+    val response = calculator1.incrementAndReturn()
+```
+- to stop a typed actor, can send Stop or PoisonPill method on the TypedActor extension and passing the reference of the dynamic proxy instance
+```
+    //To shut down the typed actor, call the stop method
+    TypedActor(system).stop(calculator1)
+    
+    //Other way to stop the actor is invoke the Poisonpill method
+    TypedActor(system).poisonPill(calculator1)
+```
+- typed actors, additional hooks can be implemented by making the implementation class implement additional interfaces. These interfaces can be overridden to initialize resources on actor start and clean up resources on actor stop.
+```
+    class Calculator extends CalculatorInt with PreStart 
+                        with PostStop {
+        import TypedActor.context
+        val log = Logging(context.system, TypedActor.self.getClass())
+        def preStart(): Unit = {
+             log.info ("Actor Started")
+        }
+    
+        def postStop(): Unit = {
+             log.info ("Actor Stopped")
+        }
+    }
+```
+- to provide an arbitrary message handling in typed actor
+- Typed actors can implement the akka.actor.TypedActor.Receiver interface in order to process messages coming to them. 
+- Now, the typed actor can handle the arbitrary messages in addition to the method calls. 
+- Adding this interface is useful when the typed actor is managing standard child actors and it wants to be notified of their termination (DeathWatch).
+```
+class Calculator extends CalculatorInt {
+    import TypedActor.context
+    val log = Logging(context.system, TypedActor.self.getClass())
+    def onReceive(message: Any, sender: ActorRef): Unit = {
+        log.info("Message received->{}", message)
+    }
+}
+```
+- to use tell or ask approach, ActorRef object is required. In typed actor we can get ActorRef using getActorRefFor()
+```
+val _system = ActorSystem("TypedActorsExample")
+
+val calculator: CalculatorInt =
+TypedActor(_system).typedActorOf(TypedProps[Calculator]())
+    
+//Get access to the ActorRef
+val calActor:ActorRef = TypedActor(_system)
+                      .getActorRefFor(calculator)
+
+//pass a message 
+calActor.tell("Hi there")
+```  
+- To supervise the typed actor
+```
+class Calculator extends CalculatorInt with Supervisor {
+
+  def supervisorStrategy(): SupervisorStrategy = 
+    OneForOneStrategy(maxNrOfRetries = 10, 
+           withinTimeRange = 10 seconds) {
+    case _: ArithmeticException => Resume
+    case _: IllegalArgumentException => Restart
+    case _: NullPointerException => Stop
+    case _: Exception => Escalate
+  }
+}
+```
+- To create a child actor in the typed actor
+```
+import TypedActor.context
+//create a child actor under the Typed Actor context
+val childActor:ActorRef = context.actorOf(Props[ChildActor],name="childActor")
+```
+
+
+
+
