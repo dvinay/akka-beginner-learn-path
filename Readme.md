@@ -404,6 +404,50 @@ import TypedActor.context
 val childActor:ActorRef = context.actorOf(Props[ChildActor],name="childActor")
 ```
 
+#### Dispatchers and Routers ####
+- Dispatcher is the engine that powers the Akka application.
+- Routers, route incoming messages to outbound actors.
+
+- Dispatchers are 4 types
+
+    - Dispatcher
+        - This is the default dispatcher used by the Akka application in case there is nothing defined.
+        - This is an event-based dispatcher that binds a set of actors to a thread pool backed up by a BlockingQueue method.
+        - Every actor is backed by its own mailbox
+        - The dispatcher can be shared with any number of actors
+        - The dispatcher can be backed by either thread pool or fork join pool
+        - The dispatcher is optimized for non-blocking code
+        
+    - Pinned dispatcher
+        - This dispatcher provides a single, dedicated thread (pinned) for each actor. 
+        - This dispatcher is useful when the actors are doing I/O operations or performing long-running calculations. 
+        - The dispatcher will deallocate the thread attached to the actor after a configurable period of inactivity.
+        - Every actor is backed by its own mailbox.
+        - A dedicated thread for each actor implies that this dispatcher cannot be shared with any other actors.
+        - The dispatcher is backed by the thread pool executor.
+        - The dispatcher is optimized for blocking operations. For example, if the code is making I/O calls or database calls, then such actors will wait until the task is finished. For such blocking operation, the pinned dispatcher performs better than the default dispatcher.
+        
+    - Balancing dispatcher
+        - It is an event-based dispatcher that tries to redistribute work from busy actors and allocate it to idle ones. 
+        - Redistribution of tasks can only work if all actors are of the same type (requirement).
+        - This task redistribution is similar to the work-stealing technique
+        - There is only one mailbox for all actors
+        - The dispatcher can be shared only with actors of the same type
+        - The dispatcher can be backed by a either thread pool or fork join pool
+        
+    - Calling thread dispatcher
+        - The calling thread dispatcher is primarily used for testing. 
+        - This dispatcher runs the task execution on the current thread only. 
+        - It does not create any new threads and provides a deterministic execution order.
+        - Every actor is backed by its own mailbox
+        - The dispatcher can be shared with any number of actors
+        - The dispatcher is backed by the calling thread
+ 
+- Mailbox are 4 types
+    - Unbounded mailbox
+    - Bounded mailbox
+    - Unbounded priority mailbox
+    - Bounded priority mailbox
 
 
 
