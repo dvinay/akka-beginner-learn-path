@@ -8,7 +8,6 @@
 
 ### What is Akka ###
 - Akka is a tool kit and a open-source library written in Scala to create concurrent, distributed and fault-tolerant applications
-- By using akka tool kit you can create application which are responsive, concurrent, distributed, event driven and fault-tolerant applications
 - Akka can integrate to any JVM based language
 
 ### How does Akka works ###
