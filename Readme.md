@@ -405,8 +405,14 @@ val childActor:ActorRef = context.actorOf(Props[ChildActor],name="childActor")
 ```
 
 #### Dispatchers and Routers ####
-- Dispatcher is the engine that powers the Akka application.
-- Routers, route incoming messages to outbound actors.
+- Dispatcher 
+    - Dispatcher is the engine that powers the Akka application, control the flow of execution.
+    - The dispatchers run on their threads; they dispatch the actors and messages from the attached mailbox and allocate on heap to the executor threads.
+    - Based on the dispatching policy, dispatchers will route the incoming message or request to the business process.
+    - dispatchers are based on the Java Executor framework. 
+    - It is based on the producer–consumer model, meaning the act of task submission (producer) is decoupled from the act of task execution (consumer). The threads that submit tasks are different from the threads that execute the tasks.
+- Routers
+    - route incoming messages to outbound actors.
 
 - Dispatchers are 4 types
 
