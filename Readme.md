@@ -666,6 +666,7 @@ override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 10, withinT
     case _: Exception => Escalate
 }
 ```
+[ref](https://github.com/dvinay/akka-beginner-learn-path/tree/master/akka-taining-essentials/src/main/scala/akka/supervisor/learning/oneforonestrategy)
 - All-For-One strategy
     - the supervision strategy is applied to all the actor siblings as well
     - akka.actor.AllForOneStrategy
@@ -678,14 +679,17 @@ override val supervisorStrategy = OneForAllStrategy(maxNrOfRetries = 10, withinT
     case _: Exception => Escalate
 }
 ```
+[ref](https://github.com/dvinay/akka-beginner-learn-path/tree/master/akka-taining-essentials/src/main/scala/akka/supervisor/learning/allforonestrategy)
+
 - maxNrOfRetries: This defines the number of times an actor is allowed to be restarted before it is assumed to be dead. 
     A negative number implies no limits.
 - withinTimeRange: This defines the duration of the time window for maxNrOfRetries. 
     The value Duration.Inf means no window defined.
 - decider: This is the function defined where the Throwable are mapped to the directives that allow us to specify the actions resume(), restart(), stop(), or escalate()
 
+#### LifeCycle Monitoring ####
 
-
+To do:
 
 
 
