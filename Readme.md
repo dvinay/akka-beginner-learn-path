@@ -454,6 +454,259 @@ val childActor:ActorRef = context.actorOf(Props[ChildActor],name="childActor")
     - Bounded mailbox
     - Unbounded priority mailbox
     - Bounded priority mailbox
+![Mail box types](https://github.com/dvinay/akka-beginner-learn-path/blob/master/resources/mail%20box%20types.png)
+
+- Akka supports two Executor contexts
+    - Thread pool executor: 
+        - is to create a pool of worker threads. Tasks are assigned to the pool using a queue. If the number of tasks exceeds the number of threads, then the tasks are queued up until a thread in the pool is available. Worker threads minimize the overhead of allocation/deallocation of threads.
+    - Fork join executor: 
+        - This is based on the premise of divide-and-conquer. The idea is to divide a large task into smaller tasks whose solution can then be combined for the final answer. The tasks need to be independent to be able run in parallel.
+
+- To configure Thread pool executor we need to pass min, max and factors for threads count
+```
+# Configuration for the thread pool
+  thread-pool-executor {
+    # minimum number of threads 
+    core-pool-size-min = 2
+    # available processors * factor
+    core-pool-size-factor = 2.0
+    # maximum number of threads 
+    core-pool-size-max = 10
+  }
+```
+- To configure Fork-Join executor we need to pass min, max and factors for threads count
+```
+# Configuration for the fork join pool
+  fork-join-executor {
+    # Min number of threads 
+    parallelism-min = 2
+    # available processors * factor
+    parallelism-factor = 2.0
+    # Max number of threads 
+    parallelism-max = 10
+}
+```
+- To configure the dispatcher, we need to pass following conf in application.conf file
+    - Negative (or zero) implies usage of an unbounded mailbox (default). A positive number implies bounded mailbox and with the specified size.
+    - Bounded or unbounded mailbox used if nothing is specified (dependent on mailbox capacity) or FQCN of the mailbox implementation
+```
+my-dispatcher {
+
+  type = Dispatcher
+
+  executor = "fork-join-executor"
+  
+  fork-join-executor {
+    parallelism-min = 2
+    parallelism-factor = 2.0
+    parallelism-max = 10
+  }
+  throughput = 100
+
+  mailbox-capacity = -1
+
+  mailbox-type =""
+}
+```
+- pinned dispatcher can be configured in application.conf file by using following configuration
+```
+my-dispatcher {
+
+  type = Dispatcher
+
+  executor = "fork-join-executor"
+  
+  fork-join-executor {
+    parallelism-min = 2
+    parallelism-factor = 2.0
+    parallelism-max = 10
+  }
+  throughput = 100
+
+  mailbox-capacity = -1
+
+  mailbox-type =""
+}
+```
+- To load the application.conf dispatcher to the application, we have to pass along with Props
+```
+val _system = ActorSystem("dispatcher", ConfigFactory.load().getConfig("MyDispatcherExample"))
+
+val actor = _system.actorOf(Props[MsgEchoActor].withDispatcher("my-dispatcher"))
+```
+### Routers ###
+- the router actors are of a special type—RouterActorRef. 
+- RouterActorRef does not make use of the store-and-forward mechanism. Instead, routers dispatch the incoming messages directly to the routee's mailboxes and avoid the router's mailbox.
+- Routers are  5 basic types
+    - Round robin router: 
+        - It routes the incoming messages in a circular order to all its routees
+    - Random router: 
+        - It randomly selects a routee and routes the message to the same
+    - Smallest mailbox router: 
+        -It identifies the actor with the least number of messages in its mailbox and routes the message to the same
+    - Broadcast router: 
+        - It forwards the same message to all the routees
+    - Scatter gather first completed router: 
+        - It forwards the message to all its routees as a future, then whichever routee actor responds back, it takes the results and sends them back to the caller
+        
+#### Routers config in application code ####
+- e.g for RoundRobinRouter
+```
+val router = system.actorOf(Props[MyActor].withRouter(RoundRobinRouter(nrOfInstances = 5)) , name = "myRouterActor")
+```
+- Here MyActor router acts like a supervisors for the Routees.
+- Note: ScatterGatherFirstCompletedRouter requires the timeout parameter while creating router actor
+
+#### Routers config in application.conf file ####
+- We can configure the routers using application.conf
+```
+MyRouterExample{
+    akka.actor.deployment {
+      /myRandomRouterActor {
+        router = random
+        nr-of-instances = 5
+      }
+    }
+}
+```
+- To load the routers information from the application.conf file 
+```
+val _system = ActorSystem.create("RandomRouterExample", ConfigFactory.load()
+            .getConfig("MyRouterExample"))
+
+val randomRouter = _system.actorOf(Props[MsgEchoActor].withRouter(FromConfig()), name = "myRandomRouterActor")
+```
+
+#### Routers config in application code - In distributed application ####
+- In case, in a distributed application. we have to configure the routers by adding address
+```
+val addresses = Seq( Address("akka", "remotesys", "host1", 1234),Address("akka", "remotesys", "host2", 1234))
+  
+val routerRemote = system.actorOf(Props[MyEchoActor].withRouter(
+  RemoteRouterConfig(RoundRobinRouter(5), addresses)))
+```
+#### Routers config in application.conf file - In distributed application ####
+```
+MyRouterExample{
+    akka.actor.deployment {
+      /myRandomRouterActor  {
+        router = round-robin
+        nr-of-instances = 5
+        target {
+              nodes = ["akka://app@192.168.0.5:2552", "akka://app@192.168.0.6:2552"]
+            }
+      }
+    }
+}
+```
+- To load the routers information from the application.conf file 
+```
+val _system = ActorSystem.create("RandomRouterExample", ConfigFactory.load()
+            .getConfig("MyRouterExample"))
+
+val randomRouter = _system.actorOf(Props[MsgEchoActor].withRouter(FromConfig()), name = "myRandomRouterActor")
+```
+
+#### Dynamically resizing routers ####
+#### Routers config in application code ####
+- In case, in a distributed application. we have to configure the routers by adding address
+```
+val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
+
+val randomRouter = system.actorOf(Props[MsgEchoActor].withRouter(
+  RandomRouter (resizer = Some(resizer))))
+```
+#### Routers config in application.conf file ####
+```
+MyRouterExample{
+    akka.actor.deployment {
+      /myRandomRouterActor  {
+        router = round-robin
+        nr-of-instances = 5
+        resizer {
+          lower-bound = 2
+          upper-bound = 15
+        }
+      }
+    }
+}
+```
+- To load the routers information from the application.conf file 
+```
+val _system = ActorSystem.create("RandomRouterExample", ConfigFactory.load()
+            .getConfig("MyRouterExample"))
+
+val randomRouter = _system.actorOf(Props[MsgEchoActor].withRouter(FromConfig()), name = "myRandomRouterActor")
+```
+
+- Note: Akka allows creation of **custom router** using **RouterConfig interface**
+
+### Supervision and Monitoring ###
+- To help manage the fault tolerance and manage the actors, Akka provides a concept called supervisors.
+- Akka by default provides a parental supervisor – "user". 
+- This parental supervisor creates the rest of the actors and the actor hierarchy.
+- When the supervisor is informed of the failure of a Subordinate actor, 4 possible choices for the supervisor
+  - Restart the Subordinate actor means kill the current actor instance and instantiate a new actor instance.
+  - Resume the Subordinate actor means the actor keeps its current state and goes back to its current state as though nothing has happened.
+  - Terminate the Subordinate actor permanently.
+  - Escalate the failure to its own supervisor.
+
+  
+#### Supervision strategies ####
+- One-For-One strategy
+    - strategy means the supervision strategy is applied only to the failed child
+    - default strategy if a strategy is not defined explicitly
+    - akka.actor.OneForOneStrategy
+    - OneForOneStrategy(maxNrOfRetries: int, withinTimeRange: Duration, decider: Decider)
+```
+override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 10 seconds) {
+    case _: ArithmeticException => Resume
+    case _: NullPointerException => Restart
+    case _: IllegalArgumentException => Stop
+    case _: Exception => Escalate
+}
+```
+- All-For-One strategy
+    - the supervision strategy is applied to all the actor siblings as well
+    - akka.actor.AllForOneStrategy
+    - AllForOneStrategy(maxNrOfRetries: int, withinTimeRange: Duration, decider: Decider)
+```
+override val supervisorStrategy = OneForAllStrategy(maxNrOfRetries = 10, withinTimeRange = 10 seconds) {
+    case _: ArithmeticException => Resume
+    case _: NullPointerException => Restart
+    case _: IllegalArgumentException => Stop
+    case _: Exception => Escalate
+}
+```
+- maxNrOfRetries: This defines the number of times an actor is allowed to be restarted before it is assumed to be dead. 
+    A negative number implies no limits.
+- withinTimeRange: This defines the duration of the time window for maxNrOfRetries. 
+    The value Duration.Inf means no window defined.
+- decider: This is the function defined where the Throwable are mapped to the directives that allow us to specify the actions resume(), restart(), stop(), or escalate()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
